@@ -1,0 +1,8 @@
+{
+    "name": "theodore/drupal-needs-review-queue",
+    "description": "Scripts for the needs review queue initiative",
+    "license": "MIT",
+    "require": {
+        "guzzlehttp/guzzle": "^7.7"
+    }
+}
