@@ -67,6 +67,7 @@ $all_nr_do_issues = fetchAll('/node', [
   'type' => 'project_issue',
   // Needs review.
   'field_issue_status' => 8,
+  'limit' => 25,
 ]);
 
 $all_rtbc_do_issues = fetchAll('/node', [
@@ -74,6 +75,7 @@ $all_rtbc_do_issues = fetchAll('/node', [
   'type' => 'project_issue',
   // RTBC.
   'field_issue_status' => 14,
+  'limit' => 10,
 ]);
 
 // Make sure we only have issues for D9+ versions
