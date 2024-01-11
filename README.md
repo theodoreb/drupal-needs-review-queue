@@ -4,7 +4,7 @@ Few scripts to help manage the needs review issue queue.
 
 ## queue-stats.php
 
-Get the number of issues in Needs review by core component: 
+Get the number of issues in RTBC or Needs review status counted by core component: 
 
 ```
 $ php queue-stats.php
