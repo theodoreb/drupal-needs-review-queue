@@ -57,7 +57,9 @@ function fetchAll(string $path, array $query): array {
 }
 
 function isRelevantIssue(object $issue): bool {
-  return !in_array($issue->field_issue_version[0], ['8', '7']);
+  $is_9_or_above = !in_array($issue->field_issue_version[0], ['8', '7']);
+  $is_not_plan = (int) $issue->field_issue_category !== 5;
+  return $is_9_or_above && $is_not_plan;
 }
 
 // Get all needs review nodes, this also takes 7.x issues but there are no good ways of avoiding that.
@@ -88,9 +90,14 @@ $relevant_issues = array_merge($relevant_nr_issues, $relevant_rtbc_issues);
 $summary = array_count_values(array_column($relevant_issues, 'field_issue_component'));
 arsort($summary);
 
+
+// Some cosmetic things.
+$longestKey = array_reduce(array_keys($summary), function ($a, $b) { return strlen($a) > strlen($b) ? $a : $b; });
+$pad_count = strlen($longestKey) + 1;
+
 foreach ($summary as $component => $count) {
-  logg("$component  $count");
+  logg(str_pad($component, $pad_count) . $count);
 }
 
 logg('');
-logg('TOTAL ' . array_sum($summary));
+logg(str_pad('TOTAL', $pad_count) . array_sum($summary));
