@@ -62,6 +62,13 @@ function isRelevantIssue(object $issue): bool {
   return $is_9_or_above && $is_not_plan;
 }
 
+function getSummary($list) {
+  // Make sure we only have issues for D9+ versions
+  $relevant_issues = array_filter($list, 'isRelevantIssue');
+  $summary = array_count_values(array_column($relevant_issues, 'field_issue_component'));
+  return $summary;
+}
+
 // Get all needs review nodes, this also takes 7.x issues but there are no good ways of avoiding that.
 // d.o crashes when trying to fetch issues for 11.x-dev.
 $all_nr_do_issues = fetchAll('/node', [
@@ -80,24 +87,50 @@ $all_rtbc_do_issues = fetchAll('/node', [
   'limit' => 10,
 ]);
 
-// Make sure we only have issues for D9+ versions
-$relevant_nr_issues = array_filter($all_nr_do_issues, 'isRelevantIssue');
-$relevant_rtbc_issues = array_filter($all_rtbc_do_issues, 'isRelevantIssue');
 
-$relevant_issues = array_merge($relevant_nr_issues, $relevant_rtbc_issues);
+$summary_nr = getSummary($all_nr_do_issues);
+$summary_rtbc = getSummary($all_rtbc_do_issues);
 
-// Initialize the result array.
-$summary = array_count_values(array_column($relevant_issues, 'field_issue_component'));
-arsort($summary);
+$components = array_unique(array_merge(array_keys($summary_nr), array_keys($summary_rtbc)));
+
+$summary = array_fill_keys($components, ['NR' => 0, 'RTBC' => 0, 'Total' => 0]);
+foreach ($summary as $component => &$count) {
+  $count['NR'] = $summary_nr[$component] ?? 0;
+  $count['RTBC'] = $summary_rtbc[$component] ?? 0;
+  $count['Total'] = $count['NR'] + $count['RTBC'];
+}
+
+uasort($summary, function ($a, $b) {
+  $tot = $b['Total'] <=> $a['Total'];
+  if ($tot === 0) {
+    return $b['RTBC'] <=> $a['RTBC'];
+  }
+  return $tot;
+});
 
 
 // Some cosmetic things.
 $longestKey = array_reduce(array_keys($summary), function ($a, $b) { return strlen($a) > strlen($b) ? $a : $b; });
 $pad_count = strlen($longestKey) + 1;
 
+function logr($component, $count) {
+  global $pad_count;
+  logg(
+    str_pad($component, $pad_count)
+    . str_pad($count['RTBC'], 5, ' ', STR_PAD_LEFT)
+    . str_pad($count['NR'], 5, ' ', STR_PAD_LEFT)
+    . str_pad($count['Total'], 6, ' ', STR_PAD_LEFT)
+  );
+}
+
+logr('', ['RTBC' => 'RTBC', 'NR' => 'NR', 'Total' => 'Total']);
 foreach ($summary as $component => $count) {
-  logg(str_pad($component, $pad_count) . $count);
+  logr($components, $count);
 }
 
 logg('');
-logg(str_pad('TOTAL', $pad_count) . array_sum($summary));
+logr('TOTAL', [
+  'RTBC' => array_sum(array_column($summary, 'RTBC')),
+  'NR' => array_sum(array_column($summary, 'NR')),
+  'Total' => array_sum(array_column($summary, 'Total')),
+]);
