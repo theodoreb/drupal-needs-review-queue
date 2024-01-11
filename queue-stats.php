@@ -60,15 +60,25 @@ function isRelevantIssue(object $issue): bool {
 
 // Get all needs review nodes, this also takes 7.x issues but there are no good ways of avoiding that.
 // d.o crashes when trying to fetch issues for 11.x-dev.
-$all_do_issues = fetchAll('/node', [
+$all_nr_do_issues = fetchAll('/node', [
   'field_project' => 3060,
   'type' => 'project_issue',
   // Needs review.
   'field_issue_status' => 8,
 ]);
 
+$all_rtbc_do_issues = fetchAll('/node', [
+  'field_project' => 3060,
+  'type' => 'project_issue',
+  // RTBC.
+  'field_issue_status' => 14,
+]);
+
 // Make sure we only have issues for D9+ versions
-$relevant_issues = array_filter($all_do_issues, 'isRelevantIssue');
+$relevant_nr_issues = array_filter($all_nr_do_issues, 'isRelevantIssue');
+$relevant_rtbc_issues = array_filter($all_rtbc_do_issues, 'isRelevantIssue');
+
+$relevant_issues = array_merge($relevant_nr_issues, $relevant_rtbc_issues);
 
 // Initialize the result array.
 $summary = array_count_values(array_column($relevant_issues, 'field_issue_component'));
