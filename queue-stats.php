@@ -28,7 +28,8 @@ function fetch(string $path, array $query = []): object|bool {
     $response = $client->get($url);
   }
   catch (\Exception $exception) {
-    dump($exception);
+    logg("Exception " . $exception->getCode() . ":" . $exception->getMessage());
+    print PHP_EOL;
     return FALSE;
   }
 
@@ -46,10 +47,11 @@ function fetchAll(string $path, array $query): array {
   $query += ['page' => 0];
   $list = [];
   do {
-    $page = fetch($path, $query);
-    $list = array_merge($list, $page->list);
-    $query['page'] = $page->self + 1;
-  } while ($page->self < $page->last);
+    if ($page = fetch($path, $query)) {
+      $list = array_merge($list, $page->list);
+      $query['page'] = $page->self + 1;
+    }
+  } while ($page !== FALSE && $page->self < $page->last);
 
   return $list;
 }
