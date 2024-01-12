@@ -93,7 +93,7 @@ $summary_rtbc = getSummary($all_rtbc_do_issues);
 
 $components = array_unique(array_merge(array_keys($summary_nr), array_keys($summary_rtbc)));
 
-$summary = array_fill_keys($components, ['NR' => 0, 'RTBC' => 0, 'Total' => 0]);
+$summary = array_fill_keys($components, ['RTBC' => 0, 'NR' => 0, 'Total' => 0]);
 foreach ($summary as $component => &$count) {
   $count['NR'] = $summary_nr[$component] ?? 0;
   $count['RTBC'] = $summary_rtbc[$component] ?? 0;
@@ -117,20 +117,21 @@ function logr($component, $count) {
   global $pad_count;
   logg(
     str_pad($component, $pad_count)
-    . str_pad($count['RTBC'], 5, ' ', STR_PAD_LEFT)
-    . str_pad($count['NR'], 5, ' ', STR_PAD_LEFT)
-    . str_pad($count['Total'], 6, ' ', STR_PAD_LEFT)
+    . str_pad($count[0], 5, ' ', STR_PAD_LEFT)
+    . str_pad($count[1], 5, ' ', STR_PAD_LEFT)
+    . str_pad($count[2], 5, ' ', STR_PAD_LEFT)
   );
 }
 
-logr('', ['RTBC' => 'RTBC', 'NR' => 'NR', 'Total' => 'Total']);
+logr('', ['RTBC', 'NR', 'Tot.']);
 foreach ($summary as $component => $infos) {
-  logr($component, $infos);
+  logr($component, array_values($infos));
 }
 
 logg('');
+logr('', ['RTBC', 'NR', 'Tot.']);
 logr('TOTAL', [
-  'RTBC' => array_sum(array_column($summary, 'RTBC')),
-  'NR' => array_sum(array_column($summary, 'NR')),
-  'Total' => array_sum(array_column($summary, 'Total')),
+  array_sum(array_column($summary, 'RTBC')),
+  array_sum(array_column($summary, 'NR')),
+  array_sum(array_column($summary, 'Total')),
 ]);
