@@ -124,8 +124,8 @@ function logr($component, $count) {
 }
 
 logr('', ['RTBC' => 'RTBC', 'NR' => 'NR', 'Total' => 'Total']);
-foreach ($summary as $component => $count) {
-  logr($components, $count);
+foreach ($summary as $component => $infos) {
+  logr($component, $infos);
 }
 
 logg('');
